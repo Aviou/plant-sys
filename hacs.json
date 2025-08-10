@@ -1,0 +1,10 @@
+{
+  "name": "Athena Plant Monitor",
+  "content_in_root": false,
+  "filename": "athena_plant_monitor",
+  "country": ["DE", "AT", "CH", "NL", "BE"],
+  "homeassistant": "2023.1.0",
+  "render_readme": true,
+  "domains": ["sensor", "binary_sensor", "switch", "number", "select", "button"],
+  "iot_class": "Local Polling"
+}

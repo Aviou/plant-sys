@@ -1,0 +1,161 @@
+{
+  "config": {
+    "title": "Athena Plant Monitor",
+    "description": "Monitor and control plants based on Athena® standards",
+    "step": {
+      "user": {
+        "title": "Set up Athena Plant Monitor",
+        "description": "Configure your Athena Plant Monitoring System. Select your ESPHome device:\n\n{discovered_devices}",
+        "data": {
+          "device_id": "ESPHome Device ID",
+          "update_interval": "Update Interval (seconds)",
+          "growth_phase": "Growth Phase",
+          "crop_steering": "Crop Steering Strategy",
+          "substrate_size": "Substrate Size (liters)"
+        }
+      },
+      "advanced": {
+        "title": "Advanced Settings",
+        "description": "Configure specific target values",
+        "data": {
+          "vwc_target": "VWC Target (%)",
+          "ec_target": "EC Target (ppm)",
+          "ph_target": "pH Target",
+          "vpd_target": "VPD Target (kPa)"
+        }
+      }
+    },
+    "error": {
+      "device_not_found": "ESPHome device not found. Make sure the device is online and has required entities.",
+      "cannot_connect": "Failed to connect to device",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "Device is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Athena Plant Monitor Options",
+        "description": "Update configuration",
+        "data": {
+          "update_interval": "Update Interval (seconds)",
+          "growth_phase": "Growth Phase",
+          "crop_steering": "Crop Steering Strategy",
+          "substrate_size": "Substrate Size (liters)",
+          "vwc_target": "VWC Target (%)",
+          "ec_target": "EC Target (ppm)",
+          "ph_target": "pH Target",
+          "vpd_target": "VPD Target (kPa)"
+        }
+      }
+    }
+  },
+  "services": {
+    "irrigation_shot": {
+      "name": "Irrigation Shot",
+      "description": "Execute a manual irrigation shot",
+      "fields": {
+        "shot_size": {
+          "name": "Shot Size",
+          "description": "Size of irrigation shot as percentage of substrate volume"
+        },
+        "duration": {
+          "name": "Duration",
+          "description": "Duration of irrigation in seconds"
+        },
+        "device_id": {
+          "name": "Device ID",
+          "description": "ESPHome device ID (optional)"
+        }
+      }
+    },
+    "set_growth_phase": {
+      "name": "Set Growth Phase",
+      "description": "Set the current growth phase",
+      "fields": {
+        "phase": {
+          "name": "Phase",
+          "description": "Growth phase"
+        },
+        "device_id": {
+          "name": "Device ID",
+          "description": "ESPHome device ID (optional)"
+        }
+      }
+    },
+    "set_crop_steering": {
+      "name": "Set Crop Steering",
+      "description": "Set the crop steering strategy",
+      "fields": {
+        "strategy": {
+          "name": "Strategy",
+          "description": "Crop steering strategy"
+        },
+        "device_id": {
+          "name": "Device ID",
+          "description": "ESPHome device ID (optional)"
+        }
+      }
+    },
+    "reset_counters": {
+      "name": "Reset Counters",
+      "description": "Reset daily water and VWC counters",
+      "fields": {
+        "reset_water": {
+          "name": "Reset Water Counter",
+          "description": "Reset daily water counter"
+        },
+        "reset_vwc": {
+          "name": "Reset VWC Counter",
+          "description": "Reset max VWC counter"
+        },
+        "device_id": {
+          "name": "Device ID",
+          "description": "ESPHome device ID (optional)"
+        }
+      }
+    },
+    "emergency_protocol": {
+      "name": "Emergency Protocol",
+      "description": "Activate emergency protocol and stop all irrigation",
+      "fields": {
+        "disable_automation": {
+          "name": "Disable Automation",
+          "description": "Disable automatic irrigation"
+        },
+        "stop_all_pumps": {
+          "name": "Stop All Pumps",
+          "description": "Stop all irrigation pumps immediately"
+        },
+        "device_id": {
+          "name": "Device ID",
+          "description": "ESPHome device ID (optional)"
+        }
+      }
+    },
+    "p1_saturation_sequence": {
+      "name": "P1 Saturation Sequence",
+      "description": "Execute Athena P1 saturation phase",
+      "fields": {
+        "shot_count": {
+          "name": "Shot Count",
+          "description": "Number of irrigation shots"
+        },
+        "shot_size": {
+          "name": "Shot Size",
+          "description": "Size of each shot in percent"
+        },
+        "interval_minutes": {
+          "name": "Interval (minutes)",
+          "description": "Minutes between shots"
+        },
+        "device_id": {
+          "name": "Device ID",
+          "description": "ESPHome device ID (optional)"
+        }
+      }
+    }
+  }
+}

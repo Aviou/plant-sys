@@ -1,0 +1,236 @@
+# Service definitions for Athena Plant Monitor
+
+irrigation_shot:
+  name: Manual Irrigation Shot
+  description: Execute a manual irrigation shot with specified size and duration
+  target:
+    entity:
+      domain: athena_plant_monitor
+  fields:
+    shot_size:
+      name: Shot Size
+      description: Size of irrigation shot as percentage of substrate volume
+      required: false
+      default: 3.0
+      selector:
+        number:
+          min: 1.0
+          max: 10.0
+          step: 0.5
+          unit_of_measurement: "%"
+    duration:
+      name: Duration
+      description: Duration of irrigation in seconds
+      required: false
+      default: 30
+      selector:
+        number:
+          min: 5
+          max: 300
+          step: 5
+          unit_of_measurement: "s"
+    device_id:
+      name: Device ID
+      description: ESPHome device ID (optional, uses default if not specified)
+      required: false
+      selector:
+        text:
+
+set_growth_phase:
+  name: Set Growth Phase
+  description: Set the current growth phase which affects all target values
+  target:
+    entity:
+      domain: athena_plant_monitor
+  fields:
+    phase:
+      name: Growth Phase
+      description: Current growth phase of the plant
+      required: true
+      selector:
+        select:
+          options:
+            - "vegetative"
+            - "flowering_stretch"
+            - "flowering_bulk"
+            - "flowering_finish"
+    device_id:
+      name: Device ID
+      description: ESPHome device ID (optional)
+      required: false
+      selector:
+        text:
+
+set_crop_steering:
+  name: Set Crop Steering Strategy
+  description: Set the crop steering strategy which affects irrigation patterns
+  target:
+    entity:
+      domain: athena_plant_monitor
+  fields:
+    strategy:
+      name: Crop Steering Strategy
+      description: Strategy for steering plant growth
+      required: true
+      selector:
+        select:
+          options:
+            - "vegetative"
+            - "generative"
+            - "balanced"
+    device_id:
+      name: Device ID
+      description: ESPHome device ID (optional)
+      required: false
+      selector:
+        text:
+
+reset_counters:
+  name: Reset Daily Counters
+  description: Reset daily water consumption and max VWC counters
+  target:
+    entity:
+      domain: athena_plant_monitor
+  fields:
+    reset_water:
+      name: Reset Water Counter
+      description: Reset the daily water consumption counter
+      required: false
+      default: false
+      selector:
+        boolean:
+    reset_vwc:
+      name: Reset VWC Counter
+      description: Reset the maximum VWC for today counter
+      required: false
+      default: false
+      selector:
+        boolean:
+    device_id:
+      name: Device ID
+      description: ESPHome device ID (optional)
+      required: false
+      selector:
+        text:
+
+emergency_protocol:
+  name: Emergency Protocol
+  description: Activate emergency stop protocol - stops all irrigation and automation
+  target:
+    entity:
+      domain: athena_plant_monitor
+  fields:
+    disable_automation:
+      name: Disable Automation
+      description: Disable automatic irrigation system
+      required: false
+      default: true
+      selector:
+        boolean:
+    stop_all_pumps:
+      name: Stop All Pumps
+      description: Immediately stop all irrigation pumps
+      required: false
+      default: true
+      selector:
+        boolean:
+    device_id:
+      name: Device ID
+      description: ESPHome device ID (optional)
+      required: false
+      selector:
+        text:
+
+p1_saturation_sequence:
+  name: P1 Saturation Sequence
+  description: Execute Athena P1 saturation phase with multiple timed irrigation shots
+  target:
+    entity:
+      domain: athena_plant_monitor
+  fields:
+    shot_count:
+      name: Number of Shots
+      description: Number of irrigation shots in the sequence
+      required: false
+      default: 3
+      selector:
+        number:
+          min: 1
+          max: 6
+          step: 1
+    shot_size:
+      name: Shot Size
+      description: Size of each irrigation shot as percentage of substrate volume
+      required: false
+      default: 4.0
+      selector:
+        number:
+          min: 2.0
+          max: 8.0
+          step: 0.5
+          unit_of_measurement: "%"
+    interval_minutes:
+      name: Interval Between Shots
+      description: Minutes to wait between irrigation shots
+      required: false
+      default: 20
+      selector:
+        number:
+          min: 10
+          max: 60
+          step: 5
+          unit_of_measurement: "min"
+
+apply_climate_strategy:
+    name: Klimastrategie anwenden
+    description: Wendet eine bestimmte Klimastrategie an oder bestimmt automatisch die optimale Strategie
+    fields:
+      strategy:
+        name: Strategie
+        description: Die anzuwendende Klimastrategie (optional, automatisch wenn leer)
+        required: false
+        selector:
+          select:
+            options:
+              - maintain_optimal
+              - intake_air
+              - heat_dehumidify
+              - cool_humidify
+              - dehumidify_only
+              - humidify_only
+              - cooling_ventilation
+              - cooling_only
+              - heating
+
+  set_ventilation_mode:
+    name: Lüftungsmodus setzen
+    description: Setzt einen bestimmten Lüftungsmodus für Zu-/Abluft
+    fields:
+      mode:
+        name: Modus
+        description: Lüftungsmodus
+        required: true
+        selector:
+          select:
+            options:
+              - reduce_intake
+              - normal
+              - increase_intake
+              - increase_exhaust
+              - maximum_intake
+              - reduce_exhaust
+
+  optimize_vpd:
+    name: VPD optimieren
+    description: Optimiert VPD basierend auf aktuellen Innen- und Außenbedingungen
+    fields:
+      target_vpd:
+        name: Ziel VPD
+        description: Gewünschter VPD-Wert (optional, berechnet basierend auf Wachstumsphase wenn leer)
+        required: false
+        selector:
+          number:
+            min: 0.5
+            max: 2.0
+            step: 0.1
+            unit_of_measurement: "kPa"

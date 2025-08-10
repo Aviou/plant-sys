@@ -1,0 +1,291 @@
+{
+  "title": "Athena Plant Monitor",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Athena Plant Monitor einrichten",
+        "description": "Konfigurieren Sie Ihr Athena Plant Monitoring System.\n\nEntdeckte ESPHome Geräte:\n{discovered_devices}",
+        "data": {
+          "device_id": "ESPHome Geräte-ID",
+          "update_interval": "Update-Intervall (Sekunden)",
+          "growth_phase": "Wachstumsphase",
+          "crop_steering": "Crop Steering Strategie",
+          "substrate_size": "Substratgröße (Liter)"
+        },
+        "data_description": {
+          "device_id": "Wählen Sie Ihr ESPHome-Gerät mit Pflanzensensoren aus",
+          "update_interval": "Wie oft die Sensordaten aktualisiert werden sollen",
+          "growth_phase": "Aktuelle Wachstumsphase Ihrer Pflanze",
+          "crop_steering": "Strategie für die Pflanzensteuerung",
+          "substrate_size": "Volumen des Substrats in Litern"
+        }
+      },
+      "advanced": {
+        "title": "Erweiterte Einstellungen",
+        "description": "Konfigurieren Sie spezifische Zielwerte für Ihre Pflanze",
+        "data": {
+          "vwc_target": "VWC Zielwert (%)",
+          "ec_target": "EC Zielwert (ppm)",
+          "ph_target": "pH Zielwert",
+          "vpd_target": "VPD Zielwert (kPa)"
+        },
+        "data_description": {
+          "vwc_target": "Gewünschter volumetrischer Wassergehalt des Substrats",
+          "ec_target": "Ziel-Leitfähigkeit für optimale Nährstoffversorgung",
+          "ph_target": "Optimaler pH-Wert für Ihre Pflanzenart",
+          "vpd_target": "Ziel-Dampfdruckdefizit für optimales Wachstum"
+        }
+      }
+    },
+    "error": {
+      "device_not_found": "ESPHome-Gerät nicht gefunden. Stellen Sie sicher, dass das Gerät online ist und über die erforderlichen Sensoren verfügt (mindestens VWC-Sensor und Pumpe).",
+      "cannot_connect": "Verbindung zum Gerät fehlgeschlagen. Überprüfen Sie die Netzwerkverbindung.",
+      "unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+    },
+    "abort": {
+      "already_configured": "Dieses Gerät ist bereits konfiguriert. Sie können die Einstellungen über die Optionen ändern."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Athena Plant Monitor Optionen",
+        "description": "Aktualisieren Sie die Konfiguration Ihres Athena Plant Monitors",
+        "data": {
+          "update_interval": "Update-Intervall (Sekunden)",
+          "growth_phase": "Wachstumsphase", 
+          "crop_steering": "Crop Steering Strategie",
+          "substrate_size": "Substratgröße (Liter)",
+          "vwc_target": "VWC Zielwert (%)",
+          "ec_target": "EC Zielwert (ppm)",
+          "ph_target": "pH Zielwert",
+          "vpd_target": "VPD Zielwert (kPa)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "Lufttemperatur"
+      },
+      "humidity": {
+        "name": "Luftfeuchtigkeit"
+      },
+      "pressure": {
+        "name": "Luftdruck"
+      },
+      "vwc": {
+        "name": "VWC Substratfeuchte"
+      },
+      "ec_substrate": {
+        "name": "EC Substrat"
+      },
+      "ph_substrate": {
+        "name": "pH Substrat"
+      },
+      "temp_substrate": {
+        "name": "Substrattemperatur"
+      },
+      "co2": {
+        "name": "CO₂ Konzentration"
+      },
+      "light": {
+        "name": "Lichtintensität"
+      },
+      "water_level": {
+        "name": "Wassertank Füllstand"
+      },
+      "vpd_calculated": {
+        "name": "VPD (berechnet)"
+      },
+      "dryback_percent": {
+        "name": "Dryback Prozent"
+      },
+      "vwc_target": {
+        "name": "VWC Zielwert"
+      },
+      "ec_target": {
+        "name": "EC Zielwert"
+      },
+      "ph_target": {
+        "name": "pH Zielwert"
+      },
+      "vpd_target": {
+        "name": "VPD Zielwert"
+      },
+      "temp_target": {
+        "name": "Temperatur Zielwert"
+      },
+      "humidity_target": {
+        "name": "Luftfeuchtigkeit Zielwert"
+      },
+      "dryback_target": {
+        "name": "Dryback Zielwert"
+      },
+      "current_phase": {
+        "name": "Aktuelle Irrigationsphase"
+      },
+      "growth_phase": {
+        "name": "Wachstumsphase"
+      },
+      "crop_steering": {
+        "name": "Crop Steering Strategie"
+      },
+      "daily_water_total": {
+        "name": "Tageswassermenge"
+      },
+      "max_vwc_today": {
+        "name": "Max VWC Heute"
+      },
+      "alerts_critical": {
+        "name": "Kritische Alerts"
+      },
+      "alerts_warning": {
+        "name": "Warnungen"
+      },
+      "alerts_info": {
+        "name": "Informationen"
+      }
+    },
+    "binary_sensor": {
+      "leak_sensor": {
+        "name": "Leckage Sensor"
+      },
+      "lights_on": {
+        "name": "Licht Status"
+      },
+      "pump_active": {
+        "name": "Pumpe Aktiv"
+      },
+      "automation_enabled": {
+        "name": "Automatisierung Aktiv"
+      },
+      "vwc_in_range": {
+        "name": "VWC im Zielbereich"
+      },
+      "ec_in_range": {
+        "name": "EC im Zielbereich"
+      },
+      "ph_in_range": {
+        "name": "pH im Zielbereich"
+      },
+      "vpd_in_range": {
+        "name": "VPD im Zielbereich"
+      }
+    },
+    "switch": {
+      "automation_enabled": {
+        "name": "Automatische Bewässerung"
+      },
+      "manual_pump": {
+        "name": "Manuelle Pumpe"
+      },
+      "fan_intake": {
+        "name": "Zuluftventilator"
+      },
+      "fan_exhaust": {
+        "name": "Abluftventilator"
+      },
+      "humidifier": {
+        "name": "Luftbefeuchter"
+      },
+      "dehumidifier": {
+        "name": "Luftentfeuchter"
+      },
+      "co2_valve": {
+        "name": "CO₂ Ventil"
+      }
+    },
+    "number": {
+      "substrate_size": {
+        "name": "Substratgröße"
+      },
+      "vwc_target_manual": {
+        "name": "VWC Zielwert (Manuell)"
+      },
+      "ec_target_manual": {
+        "name": "EC Zielwert (Manuell)"
+      },
+      "ph_target_manual": {
+        "name": "pH Zielwert (Manuell)"
+      },
+      "vpd_target_manual": {
+        "name": "VPD Zielwert (Manuell)"
+      },
+      "irrigation_shot_size": {
+        "name": "Bewässerungsschuss Größe"
+      },
+      "irrigation_duration": {
+        "name": "Bewässerungsdauer"
+      }
+    },
+    "select": {
+      "growth_phase": {
+        "name": "Wachstumsphase",
+        "state": {
+          "vegetative": "Vegetativ",
+          "flowering_stretch": "Blüte (Stretch)",
+          "flowering_bulk": "Blüte (Bulk)",
+          "flowering_finish": "Blüte (Finish)"
+        }
+      },
+      "crop_steering": {
+        "name": "Crop Steering Strategie",
+        "state": {
+          "vegetative": "Vegetativ",
+          "generative": "Generativ", 
+          "balanced": "Ausgewogen"
+        }
+      }
+    },
+    "button": {
+      "irrigation_shot_small": {
+        "name": "Kleiner Bewässerungsschuss (2%)"
+      },
+      "irrigation_shot_medium": {
+        "name": "Mittlerer Bewässerungsschuss (3%)"
+      },
+      "irrigation_shot_large": {
+        "name": "Großer Bewässerungsschuss (5%)"
+      },
+      "irrigation_shot_custom": {
+        "name": "Benutzerdefinierter Bewässerungsschuss"
+      },
+      "reset_daily_water": {
+        "name": "Tageswasserzähler zurücksetzen"
+      },
+      "reset_max_vwc": {
+        "name": "Max VWC zurücksetzen"
+      },
+      "calibrate_sensors": {
+        "name": "Sensoren kalibrieren"
+      },
+      "emergency_stop": {
+        "name": "Notfall-Stopp"
+      }
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "irrigation_started": "Bewässerung gestartet",
+      "irrigation_completed": "Bewässerung beendet",
+      "phase_changed": "Irrigationsphase geändert",
+      "alert_triggered": "Alert ausgelöst",
+      "growth_phase_changed": "Wachstumsphase geändert",
+      "crop_steering_changed": "Crop Steering geändert"
+    },
+    "condition_type": {
+      "is_irrigation_phase": "Ist in Irrigationsphase",
+      "is_growth_phase": "Ist in Wachstumsphase",
+      "automation_enabled": "Automatisierung ist aktiviert",
+      "lights_on": "Licht ist an"
+    },
+    "action_type": {
+      "irrigation_shot": "Bewässerungsschuss ausführen",
+      "set_growth_phase": "Wachstumsphase setzen",
+      "set_crop_steering": "Crop Steering setzen",
+      "emergency_stop": "Notfall-Stopp"
+    }
+  }
+}

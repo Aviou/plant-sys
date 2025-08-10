@@ -1,0 +1,12 @@
+{
+  "domain": "athena_plant_monitor",
+  "name": "Athena Plant Monitor",
+  "documentation": "https://github.com/avi23/athena-plant-monitor",
+  "dependencies": [],
+  "codeowners": ["@avi23"],
+  "requirements": [],
+  "version": "1.0.0",
+  "config_flow": true,
+  "iot_class": "local_polling",
+  "integration_type": "hub"
+}

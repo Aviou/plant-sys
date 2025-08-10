@@ -1,0 +1,191 @@
+{
+  "config": {
+    "title": "Athena Plant Monitor",
+    "description": "Überwachung und Steuerung von Pflanzen basierend auf Athena® Standards",
+    "step": {
+      "user": {
+        "title": "Athena Plant Monitor einrichten",
+        "description": "Konfigurieren Sie Ihr Athena Plant Monitoring System. Wählen Sie Ihr ESPHome Gerät aus:\n\n{discovered_devices}",
+        "data": {
+          "device_id": "ESPHome Geräte-ID",
+          "update_interval": "Update-Intervall (Sekunden)",
+          "growth_phase": "Wachstumsphase",
+          "crop_steering": "Crop Steering Strategie",
+          "substrate_size": "Substratgröße (Liter)"
+        }
+      },
+      "advanced": {
+        "title": "Erweiterte Einstellungen",
+        "description": "Konfigurieren Sie spezifische Zielwerte",
+        "data": {
+          "vwc_target": "VWC Zielwert (%)",
+          "ec_target": "EC Zielwert (ppm)",
+          "ph_target": "pH Zielwert",
+          "vpd_target": "VPD Zielwert (kPa)"
+        }
+      }
+    },
+    "error": {
+      "device_not_found": "ESPHome Gerät nicht gefunden. Stellen Sie sicher, dass das Gerät online ist und die erforderlichen Entitäten hat.",
+      "cannot_connect": "Verbindung zum Gerät fehlgeschlagen",
+      "unknown": "Unerwarteter Fehler"
+    },
+    "abort": {
+      "already_configured": "Gerät ist bereits konfiguriert"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Athena Plant Monitor Optionen",
+        "description": "Aktualisieren Sie die Konfiguration",
+        "data": {
+          "update_interval": "Update-Intervall (Sekunden)",
+          "growth_phase": "Wachstumsphase",
+          "crop_steering": "Crop Steering Strategie",
+          "substrate_size": "Substratgröße (Liter)",
+          "vwc_target": "VWC Zielwert (%)",
+          "ec_target": "EC Zielwert (ppm)",
+          "ph_target": "pH Zielwert",
+          "vpd_target": "VPD Zielwert (kPa)"
+        }
+      }
+    }
+  },
+  "services": {
+    "irrigation_shot": {
+      "name": "Bewässerungsschuss",
+      "description": "Führt einen manuellen Bewässerungsschuss aus",
+      "fields": {
+        "shot_size": {
+          "name": "Schussgröße",
+          "description": "Größe des Bewässerungsschusses als Prozent des Substratvolumens"
+        },
+        "duration": {
+          "name": "Dauer",
+          "description": "Dauer der Bewässerung in Sekunden"
+        },
+        "device_id": {
+          "name": "Geräte-ID",
+          "description": "ID des ESPHome Geräts (optional)"
+        }
+      }
+    },
+    "set_growth_phase": {
+      "name": "Wachstumsphase setzen",
+      "description": "Setzt die aktuelle Wachstumsphase",
+      "fields": {
+        "phase": {
+          "name": "Phase",
+          "description": "Wachstumsphase"
+        },
+        "device_id": {
+          "name": "Geräte-ID",
+          "description": "ID des ESPHome Geräts (optional)"
+        }
+      }
+    },
+    "set_crop_steering": {
+      "name": "Crop Steering setzen",
+      "description": "Setzt die Crop Steering Strategie",
+      "fields": {
+        "strategy": {
+          "name": "Strategie",
+          "description": "Crop Steering Strategie"
+        },
+        "device_id": {
+          "name": "Geräte-ID",
+          "description": "ID des ESPHome Geräts (optional)"
+        }
+      }
+    },
+    "reset_counters": {
+      "name": "Zähler zurücksetzen",
+      "description": "Setzt Tageswasser- und VWC-Zähler zurück",
+      "fields": {
+        "reset_water": {
+          "name": "Wasserzähler zurücksetzen",
+          "description": "Tageswasserzähler zurücksetzen"
+        },
+        "reset_vwc": {
+          "name": "VWC-Zähler zurücksetzen",
+          "description": "Max VWC Zähler zurücksetzen"
+        },
+        "device_id": {
+          "name": "Geräte-ID",
+          "description": "ID des ESPHome Geräts (optional)"
+        }
+      }
+    },
+    "emergency_protocol": {
+      "name": "Notfallprotokoll",
+      "description": "Aktiviert Notfallprotokoll und stoppt alle Bewässerung",
+      "fields": {
+        "disable_automation": {
+          "name": "Automatisierung deaktivieren",
+          "description": "Automatische Bewässerung deaktivieren"
+        },
+        "stop_all_pumps": {
+          "name": "Alle Pumpen stoppen",
+          "description": "Alle Bewässerungspumpen sofort stoppen"
+        },
+        "device_id": {
+          "name": "Geräte-ID",
+          "description": "ID des ESPHome Geräts (optional)"
+        }
+      }
+    },
+    "p1_saturation_sequence": {
+      "name": "P1 Sättigungssequenz",
+      "description": "Führt die Athena P1 Sättigungsphase aus",
+      "fields": {
+        "shot_count": {
+          "name": "Anzahl Schüsse",
+          "description": "Anzahl der Bewässerungsschüsse"
+        },
+        "shot_size": {
+          "name": "Schussgröße",
+          "description": "Größe jedes Schusses in Prozent"
+        },
+        "interval_minutes": {
+          "name": "Intervall (Minuten)",
+          "description": "Minuten zwischen den Schüssen"
+        },
+        "device_id": {
+          "name": "Geräte-ID",
+          "description": "ID des ESPHome Geräts (optional)"
+        }
+      }
+    },
+    "apply_climate_strategy": {
+      "name": "Klimastrategie anwenden",
+      "description": "Wendet eine bestimmte Klimastrategie an oder bestimmt automatisch die optimale",
+      "fields": {
+        "strategy": {
+          "name": "Strategie",
+          "description": "Klimastrategie (optional, automatisch wenn leer)"
+        }
+      }
+    },
+    "set_ventilation_mode": {
+      "name": "Lüftungsmodus setzen",
+      "description": "Setzt einen bestimmten Lüftungsmodus",
+      "fields": {
+        "mode": {
+          "name": "Modus",
+          "description": "Lüftungsmodus"
+        }
+      }
+    },
+    "optimize_vpd": {
+      "name": "VPD optimieren",
+      "description": "Optimiert VPD basierend auf aktuellen Bedingungen",
+      "fields": {
+        "target_vpd": {
+          "name": "Ziel VPD",
+          "description": "Gewünschter VPD-Wert (optional)"
+        }
+      }
+    }
+  }
+}
