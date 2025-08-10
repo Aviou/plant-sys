@@ -1,7 +1,7 @@
 # Plant Monitoring System
 
 Ein System zur Überwachung von Pflanzen mit verschiedenen Sensoren.
-
+g
 ## Sensoren
 
 | Sensor ID | Kategorie | Typ | Beschreibung |
