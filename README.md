@@ -4,23 +4,24 @@ Ein System zur Überwachung von Pflanzen mit verschiedenen Sensoren.
 
 ## Sensoren
 
-| Sensor ID | Kategorie | Typ | Messbereich | Genauigkeit | Beschreibung | Status |
-|-----------|-----------|-----|-------------|-------------|--------------|--------|
-| TEMP-001 | Temperatur | DS18B20 | -55°C bis +125°C | ±0.5°C | Bodentemperatur | ✅ Aktiv |
-| TEMP-002 | Temperatur | DHT22 | -40°C bis +80°C | ±0.5°C | Lufttemperatur | ✅ Aktiv |
-| HUMID-001 | Feuchtigkeit | DHT22 | 0-100% RH | ±2-5% RH | Luftfeuchtigkeit | ✅ Aktiv |
-| SOIL-001 | Feuchtigkeit | Kapazitiv | 0-100% | ±3% | Bodenfeuchtigkeit | ✅ Aktiv |
-| LIGHT-001 | Licht | BH1750 | 1-65535 lux | ±20% | Umgebungslicht | ✅ Aktiv |
-| UV-001 | Licht | VEML6070 | 0-15 UV Index | ±1 UV Index | UV-Strahlung | 🔧 Wartung |
-| PH-001 | pH-Wert | Analog pH | 0-14 pH | ±0.1 pH | Boden pH-Wert | ✅ Aktiv |
-| CO2-001 | Umwelt | MH-Z19B | 400-5000 ppm | ±50 ppm + 3% | CO2-Konzentration | ✅ Aktiv |
-| PRESSURE-001 | Umwelt | BMP280 | 300-1100 hPa | ±1 hPa | Luftdruck | ✅ Aktiv |
+| Sensor ID | Kategorie | Typ | Beschreibung |
+|-----------|-----------|-----|--------------|
+| TEMP-002 | Temperatur | BME280| Lufttemperatur Innen |
+| HUMID-001 | Feuchtigkeit | BME280 | Luftfeuchtigkeit Innen|
+| PRESSURE-001 | Umwelt | BME280 | Luftdruck Innen|
+| VPD-001 | VPD | Calc | VPD Innen |
+| TEMP-003 | Temperatur | DHT22| Lufttemperatur Außen |
+| HUMID-002 | Feuchtigkeit | DHT22 | Luftfeuchtigkeit Außen|
+| VPD-002 | VPD | Calc | VPD Außen |
+| LIGHT-001 | Licht | BH1750 | Umgebungslicht |
+| UV-001 | Licht | VEML6070 | UV-Strahlung |
+| TEMP-001 | Temperatur | DS18B20 | Bodentemperatur |
+| PH-001 | pH-Wert | Analog pH | Boden pH-Wert |
+| EC-001 | EC-Wert | DS18B20 | Boden Ec-Wert |
+| VWC-001 | Bodenfeuchtigkeit | DS18B20 | Bodenfeuchtigkeit |
+| CO2-001 | Umwelt | MH-Z19B | CO2-Konzentration |
 
-## Status-Legende
-- ✅ **Aktiv**: Sensor funktioniert normal
-- 🔧 **Wartung**: Sensor benötigt Wartung
-- ❌ **Defekt**: Sensor ist ausgefallen
-- 🔄 **Konfiguration**: Sensor wird eingerichtet
+
 
 ## Messwerte
 Alle Sensoren werden kontinuierlich überwacht und die Daten werden gespeichert für:
