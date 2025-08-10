@@ -64,6 +64,11 @@ SWITCH_DESCRIPTIONS = [
         name="Notfall-Lüftung",
         icon="mdi:fan-alert",
     ),
+    SwitchEntityDescription(
+        key="external_grow_light",
+        name="Wachstumslicht (extern)",
+        icon="mdi:lightbulb-on",
+    ),
 ]
 
 
@@ -111,6 +116,13 @@ class AthenaPlantSwitch(CoordinatorEntity, SwitchEntity):
             return self.coordinator.data.get("climate_control", {}).get("vpd_optimization", False)
         elif key == "emergency_ventilation":
             return self.coordinator.data.get("climate_control", {}).get("emergency_mode", False)
+        elif key == "external_grow_light":
+            # Prüfe externe Lichtentität
+            external_light_entity = self.coordinator._external_light_entity
+            if external_light_entity:
+                external_state = self.hass.states.get(external_light_entity)
+                return external_state and external_state.state == "on"
+            return False
         else:
             # For ESPHome entities, get state
             return self.coordinator.data.get(key) == "on"
@@ -155,6 +167,15 @@ class AthenaPlantSwitch(CoordinatorEntity, SwitchEntity):
             self.coordinator._climate_control["emergency_mode"] = True
             await self.coordinator.set_ventilation_mode("maximum_intake")
             await self.coordinator.async_request_refresh()
+        elif key == "external_grow_light":
+            # Steuerung der externen Lichtentität
+            external_light_entity = self.coordinator._external_light_entity
+            if external_light_entity:
+                await self.hass.services.async_call(
+                    external_light_entity.split(".")[0], "turn_on",
+                    {"entity_id": external_light_entity}
+                )
+                await self.coordinator.async_request_refresh()
         else:
             # Control ESPHome entity
             entity_id = self.coordinator.get_entity_id(key)
@@ -198,6 +219,16 @@ class AthenaPlantSwitch(CoordinatorEntity, SwitchEntity):
             if hasattr(self.coordinator, '_climate_control'):
                 self.coordinator._climate_control["emergency_mode"] = False
             await self.coordinator.set_ventilation_mode("normal")  # Return to normal
+            await self.coordinator.async_request_refresh()
+        elif key == "external_grow_light":
+            # Ausschalten der externen Lichtentität
+            external_light_entity = self.coordinator._external_light_entity
+            if external_light_entity:
+                await self.hass.services.async_call(
+                    external_light_entity.split(".")[0], "turn_off",
+                    {"entity_id": external_light_entity}
+                )
+                await self.coordinator.async_request_refresh()
             await self.coordinator.async_request_refresh()
         else:
             # Control ESPHome entity

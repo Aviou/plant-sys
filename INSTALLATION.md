@@ -129,11 +129,6 @@ sensor:
     co2:
       name: "CO2"
       
-  # Lichtsensor
-  - platform: bh1750
-    name: "Light"
-    address: 0x23
-    
 binary_sensor:
   # Leckage-Sensor
   - platform: gpio

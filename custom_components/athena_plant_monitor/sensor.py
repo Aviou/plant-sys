@@ -65,14 +65,6 @@ SENSOR_DESCRIPTIONS = [
         native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
         icon="mdi:molecule-co2",
     ),
-    SensorEntityDescription(
-        key="light",
-        name="Lichtintensität",
-        device_class=SensorDeviceClass.ILLUMINANCE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfIlluminance.LUX,
-        icon="mdi:brightness-6",
-    ),
     
     # Substrate sensors
     SensorEntityDescription(
@@ -120,13 +112,6 @@ SENSOR_DESCRIPTIONS = [
         icon="mdi:air-filter",
     ),
     SensorEntityDescription(
-        key="vpd_outside",
-        name="VPD Außen (berechnet)",
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kPa",
-        icon="mdi:weather-partly-cloudy",
-    ),
-    SensorEntityDescription(
         key="dryback_percent",
         name="Dryback Prozent",
         state_class=SensorStateClass.MEASUREMENT,
@@ -160,6 +145,30 @@ SENSOR_DESCRIPTIONS = [
         name="VPD Zielwert",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kPa",
+        icon="mdi:bullseye-arrow",
+    ),
+    SensorEntityDescription(
+        key="temperature_target",
+        name="Temperatur Zielwert",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        icon="mdi:bullseye-arrow",
+    ),
+    SensorEntityDescription(
+        key="humidity_target",
+        name="Luftfeuchtigkeit Zielwert",
+        device_class=SensorDeviceClass.HUMIDITY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        icon="mdi:bullseye-arrow",
+    ),
+    SensorEntityDescription(
+        key="co2_target",
+        name="CO₂ Zielwert",
+        device_class=SensorDeviceClass.CARBON_DIOXIDE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
         icon="mdi:bullseye-arrow",
     ),
     SensorEntityDescription(
@@ -217,6 +226,11 @@ STATUS_SENSOR_DESCRIPTIONS = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
         icon="mdi:trending-up",
+    ),
+    SensorEntityDescription(
+        key="is_day_cycle",
+        name="Tag/Nacht Zyklus",
+        icon="mdi:weather-sunny",
     ),
 ]
 
@@ -325,6 +339,9 @@ class AthenaPlantStatusSensor(CoordinatorEntity, SensorEntity):
             return self.coordinator.data.get("irrigation_state", {}).get("daily_water_total", 0)
         elif key == "max_vwc_today":
             return self.coordinator.data.get("irrigation_state", {}).get("max_vwc_today", 0)
+        elif key == "is_day_cycle":
+            is_day = self.coordinator.data.get("is_day_cycle", False)
+            return "Tag" if is_day else "Nacht"
         
         return None
 

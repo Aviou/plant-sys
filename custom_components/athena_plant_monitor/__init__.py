@@ -73,7 +73,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = AthenaPlantCoordinator(
         hass,
         entry.data.get(CONF_DEVICE_ID, "esphome_node_1"),
-        entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+        entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),
+        entry.data  # Übergebe komplette Konfiguration für externe Lichtsteuerung
     )
     
     # Store coordinator

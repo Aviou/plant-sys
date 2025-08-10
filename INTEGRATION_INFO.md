@@ -1,6 +1,20 @@
 # Athena Plant Monitor - HACS Integration
 
-## 📋 Übersicht der erstellten HACS Integration
+## 📋 Üb### 4. Umfassende Sensorpalette
+- **Umweltsensoren**: Temperatur, Luftfeuchtigkeit, CO₂
+- **Substratsensoren**: VWC, EC, pH, Temperatur
+- **Berechnete Werte**: VPD, Dryback-Prozent
+- **Zielwert-Sensoren**: Dynamische Targets basierend auf Phase, Steering & Tag/Nacht
+- **Status-Sensoren**: Aktuelle Phase, Wachstumsstatus, Wasserzähler, Tag/Nacht-Status
+
+### 5. Intelligente Steuerung
+- **Automatisierung**: Ein/Aus-Steuerung der automatischen Bewässerung
+- **Manuelle Kontrolle**: Direkte Pumpen- und Klimasteuerung
+- **Lichtsteuerung**: Externe WLAN-Steckdosen und Smart Switches
+- **Konfigurable Parameter**: Substratgröße, Zielwerte, Bewässerungsparameter
+- **Phasen-/Strategiewahl**: Dropdown-Auswahl für alle Einstellungen
+
+### 6. Benutzerfreundliche Aktionenstellten HACS Integration
 
 Ich habe eine vollständige HACS-Integration für Home Assistant erstellt, die auf Ihrer README und den Athena® Standards basiert. Die Integration bietet eine vollständige UI-basierte Konfiguration ohne YAML-Bearbeitung.
 
@@ -35,15 +49,23 @@ custom_components/athena_plant_monitor/
 - Validiert erforderliche Entitäten (VWC, Pumpe)
 - Zeigt verfügbare Geräte im Konfigurationsflow
 
-### 2. Vollständige Athena® Implementation
+### 2. Flexible Lichtsteuerung 💡
+- **WLAN-Steckdosen Support**: Automatische Erkennung von Switch-Entitäten für Growlights
+- **Tag/Nacht-Erkennung**: Basiert auf Licht-Entitäten (Switches/Lights) oder zeitbasierte Fallbacks
+- **UI-Konfiguration**: Auswahl der Lichtquelle über benutzerfreundliche Oberfläche
+- **Dynamische Zielwerte**: Temperatur, Luftfeuchtigkeit, VPD und CO₂ passen sich automatisch an
+- **Kein Lichtsensor erforderlich**: Verwendet direkte Lichtsteuerung oder Zeitpläne
+
+### 3. Vollständige Athena® Implementation
 - **P0-P3 Irrigationsphasen**: Komplette Umsetzung aller vier Phasen
 - **Crop Steering**: Vegetativ, Generativ, Ausgewogen
 - **Wachstumsphasen**: Vegetativ, Blüte (Stretch, Bulk, Finish)
 - **VPD-Berechnung**: Automatische Dampfdruckdefizit-Berechnung
 - **Dryback-Tracking**: Kontinuierliche Rücktrocknungsüberwachung
+- **Tag/Nacht-Zyklen**: Separate Zielwerte für alle Parameter
 
 ### 3. Umfassende Sensorpalette
-- **Umweltsensoren**: Temperatur, Luftfeuchtigkeit, CO₂, Licht
+- **Umweltsensoren**: Temperatur, Luftfeuchtigkeit, CO₂
 - **Substratsensoren**: VWC, EC, pH, Temperatur
 - **Berechnete Werte**: VPD, Dryback-Prozent
 - **Zielwert-Sensoren**: Dynamische Targets basierend auf Phase & Steering
@@ -140,7 +162,7 @@ data:
     above: 5.0
   condition:
     - condition: state
-      entity_id: binary_sensor.athena_lights_on
+      entity_id: binary_sensor.athena_day_cycle
       state: 'on'
     - condition: state
       entity_id: switch.athena_automation_enabled

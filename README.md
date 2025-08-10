@@ -51,8 +51,7 @@ homeassistant/
 │   ├── esphome_node_1_ec_substrate    # sensor.esphome_node_1_ec_substrate
 │   ├── esphome_node_1_ph_substrate    # sensor.esphome_node_1_ph_substrate
 │   ├── esphome_node_1_temp_substrate  # sensor.esphome_node_1_temp_substrate
-│   ├── esphome_node_1_co2             # sensor.esphome_node_1_co2
-│   └── esphome_node_1_light           # sensor.esphome_node_1_light
+│   └── esphome_node_1_co2             # sensor.esphome_node_1_co2
 ├── switch/
 │   ├── esphome_node_1_pump            # switch.esphome_node_1_pump
 │   ├── esphome_node_1_fan_intake      # switch.esphome_node_1_fan_intake
@@ -164,7 +163,6 @@ Das langfristige Ziel ist die Entwicklung einer **HACS (Home Assistant Community
 | BME280 | `sensor.esphome_node_1_pressure` | Luftdruck | Standardluftdruck |
 | Template | `sensor.vpd_calculated` | VPD (berechnet) | Veg: 0.8-1.0 kPa, Flower: 1.0-1.4 kPa |
 | SenseAir S8 | `sensor.esphome_node_1_co2` | CO₂ Konzentration | 400-1500 ppm |
-| BH1750 | `sensor.esphome_node_1_light` | Lichtintensität | Referenzwert |
 
 ### Substratmonitoring (vereinfacht ohne Runoff)
 
@@ -183,7 +181,6 @@ Das langfristige Ziel ist die Entwicklung einer **HACS (Home Assistant Community
 | Wassertank | `sensor.esphome_node_1_water_level` | Tank-Füllstand |
 | Leak Sensor | `binary_sensor.esphome_node_1_leak_sensor` | Leckage-Erkennung |
 |-----------|-----------|-----|--------------|
-| LIGHT-001 | Licht | BH1750 | Umgebungslicht |
 | UV-001 | Licht | VEML6070 | UV-Strahlung |
 | TEMP-003 | Temperatur | CWT-Soil-THCPH-S | Bodentemperatur |
 | PH-001 | pH-Wert | CWT-Soil-THCPH-S | Boden pH-Wert |

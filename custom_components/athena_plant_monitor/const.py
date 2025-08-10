@@ -23,6 +23,11 @@ CONF_EC_TARGET = "ec_target"
 CONF_PH_TARGET = "ph_target"
 CONF_VPD_TARGET = "vpd_target"
 
+# Configuration Keys für externe Entitäten
+CONF_EXTERNAL_LIGHT_ENTITY = "external_light_entity"
+CONF_LIGHT_SCHEDULE_START = "light_schedule_start"
+CONF_LIGHT_SCHEDULE_END = "light_schedule_end"
+
 # Defaults
 DEFAULT_UPDATE_INTERVAL = 30  # seconds
 DEFAULT_SUBSTRATE_SIZE = 10.0  # liters
@@ -30,6 +35,8 @@ DEFAULT_VWC_TARGET = 75.0  # percent
 DEFAULT_EC_TARGET = 4.0  # ppm
 DEFAULT_PH_TARGET = 6.0
 DEFAULT_VPD_TARGET = 1.0  # kPa
+DEFAULT_LIGHT_SCHEDULE_START = "06:00"
+DEFAULT_LIGHT_SCHEDULE_END = "22:00"
 
 # Data storage
 DATA_COORDINATOR = "coordinator"
@@ -46,27 +53,57 @@ ESPHOME_ENTITIES = {
     "ph_substrate": "sensor.{device_id}_ph_substrate",
     "temp_substrate": "sensor.{device_id}_temp_substrate",
     "co2": "sensor.{device_id}_co2",
-    "light": "sensor.{device_id}_light",
     "water_level": "sensor.{device_id}_water_level",
+    
+    # Actuators (ESPHome)
+    "pump": "switch.{device_id}_pump",
+    "fan_intake": "switch.{device_id}_fan_intake",
+    "fan_exhaust": "switch.{device_id}_fan_exhaust",
+    "humidifier": "switch.{device_id}_humidifier",
+    "dehumidifier": "switch.{device_id}_dehumidifier",
+    "co2_valve": "switch.{device_id}_co2_valve",
+    
+    # Light Control (kann ESPHome oder externe Switch sein)
+    "led_panel": "light.{device_id}_led_panel",  # ESPHome Light
+    "grow_light_switch": "switch.{device_id}_grow_light",  # ESPHome Switch
     
     # Outdoor climate sensors (für erweiterte Klimaregelung)
     "temperature_outside": "sensor.{device_id}_temperature_outside",
     "humidity_outside": "sensor.{device_id}_humidity_outside",
     "pressure_outside": "sensor.{device_id}_pressure_outside",
     "co2_outside": "sensor.{device_id}_co2_outside",
-    "light_outside": "sensor.{device_id}_light_outside",
 }
 
-# Athena® Growth Phases
+# Configuration Keys für externe Entitäten
+CONF_EXTERNAL_LIGHT_ENTITY = "external_light_entity"
+CONF_LIGHT_SCHEDULE_START = "light_schedule_start"
+CONF_LIGHT_SCHEDULE_END = "light_schedule_end"
+
+# Day/Night Configuration (ohne Lichtsensor)
+DAY_NIGHT_CONFIG = {
+    "temp_difference": 3.0,    # °C - Nachtabsenkung
+    "vpd_difference": 0.2,     # kPa - VPD Reduktion nachts
+    "humidity_increase": 5.0,  # % - Erhöhung der Luftfeuchtigkeit nachts
+    "co2_reduction": 200,      # ppm - CO₂ Reduktion nachts
+}
+
+# Athena® Growth Phases with Day/Night Parameters
 GROWTH_PHASES = {
     "vegetative": {
         "name": "Vegetative",
         "vwc_target": 75.0,
         "ec_target": 4.0,
         "ph_target": 6.0,
-        "vpd_target": 0.9,
-        "temp_target": 25.0,
-        "humidity_target": 65.0,
+        # Tag-Parameter
+        "vpd_target_day": 0.9,
+        "temp_target_day": 25.0,
+        "humidity_target_day": 65.0,
+        "co2_target_day": 1200,
+        # Nacht-Parameter
+        "vpd_target_night": 0.7,
+        "temp_target_night": 22.0,
+        "humidity_target_night": 70.0,
+        "co2_target_night": 1000,
         "dryback_target": 35.0,
     },
     "flowering_stretch": {
@@ -74,9 +111,16 @@ GROWTH_PHASES = {
         "vwc_target": 80.0,
         "ec_target": 5.0,
         "ph_target": 6.0,
-        "vpd_target": 1.0,
-        "temp_target": 24.0,
-        "humidity_target": 60.0,
+        # Tag-Parameter
+        "vpd_target_day": 1.0,
+        "temp_target_day": 24.0,
+        "humidity_target_day": 60.0,
+        "co2_target_day": 1400,
+        # Nacht-Parameter
+        "vpd_target_night": 0.8,
+        "temp_target_night": 21.0,
+        "humidity_target_night": 65.0,
+        "co2_target_night": 1200,
         "dryback_target": 40.0,
     },
     "flowering_bulk": {
@@ -84,9 +128,16 @@ GROWTH_PHASES = {
         "vwc_target": 85.0,
         "ec_target": 7.0,
         "ph_target": 6.0,
-        "vpd_target": 1.2,
-        "temp_target": 22.0,
-        "humidity_target": 55.0,
+        # Tag-Parameter
+        "vpd_target_day": 1.2,
+        "temp_target_day": 22.0,
+        "humidity_target_day": 55.0,
+        "co2_target_day": 1500,
+        # Nacht-Parameter
+        "vpd_target_night": 1.0,
+        "temp_target_night": 19.0,
+        "humidity_target_night": 60.0,
+        "co2_target_night": 1300,
         "dryback_target": 45.0,
     },
     "flowering_finish": {
@@ -94,9 +145,16 @@ GROWTH_PHASES = {
         "vwc_target": 70.0,
         "ec_target": 3.0,
         "ph_target": 6.0,
-        "vpd_target": 1.4,
-        "temp_target": 20.0,
-        "humidity_target": 50.0,
+        # Tag-Parameter
+        "vpd_target_day": 1.4,
+        "temp_target_day": 20.0,
+        "humidity_target_day": 50.0,
+        "co2_target_day": 1200,
+        # Nacht-Parameter
+        "vpd_target_night": 1.2,
+        "temp_target_night": 17.0,
+        "humidity_target_night": 55.0,
+        "co2_target_night": 1000,
         "dryback_target": 50.0,
     },
 }

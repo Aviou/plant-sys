@@ -22,12 +22,17 @@ from .const import (
     CONF_EC_TARGET,
     CONF_PH_TARGET,
     CONF_VPD_TARGET,
+    CONF_EXTERNAL_LIGHT_ENTITY,
+    CONF_LIGHT_SCHEDULE_START,
+    CONF_LIGHT_SCHEDULE_END,
     DEFAULT_UPDATE_INTERVAL,
     DEFAULT_SUBSTRATE_SIZE,
     DEFAULT_VWC_TARGET,
     DEFAULT_EC_TARGET,
     DEFAULT_PH_TARGET,
     DEFAULT_VPD_TARGET,
+    DEFAULT_LIGHT_SCHEDULE_START,
+    DEFAULT_LIGHT_SCHEDULE_END,
     GROWTH_PHASES,
     CROP_STEERING_STRATEGIES,
 )
@@ -44,6 +49,7 @@ class AthenaPlantConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Initialize the config flow."""
         self._discovered_devices: Dict[str, str] = {}
         self._device_id: Optional[str] = None
+        self._basic_config: Optional[Dict[str, Any]] = None
 
     async def async_step_user(self, user_input: Optional[Dict[str, Any]] = None) -> FlowResult:
         """Handle the initial step."""
@@ -56,10 +62,10 @@ class AthenaPlantConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(device_id)
                 self._abort_if_unique_id_configured()
                 
-                return self.async_create_entry(
-                    title=f"Athena Plant Monitor ({device_id})",
-                    data=user_input,
-                )
+                # Speichere Grundkonfiguration und gehe zu Lichtsteuerung
+                self._device_id = device_id
+                self._basic_config = user_input
+                return await self.async_step_light_control()
             else:
                 errors[CONF_DEVICE_ID] = "device_not_found"
 
@@ -80,6 +86,37 @@ class AthenaPlantConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
             description_placeholders={
                 "discovered_devices": "\n".join([f"• {name} ({device_id})" for device_id, name in discovered_devices.items()]),
+            },
+        )
+
+    async def async_step_light_control(self, user_input: Optional[Dict[str, Any]] = None) -> FlowResult:
+        """Handle light control configuration."""
+        errors = {}
+
+        if user_input is not None:
+            # Kombiniere Grundkonfiguration mit Lichtsteuerung
+            final_config = {**self._basic_config, **user_input}
+            
+            return self.async_create_entry(
+                title=f"Athena Plant Monitor ({self._device_id})",
+                data=final_config,
+            )
+
+        # Finde verfügbare Licht-Entitäten
+        available_lights = await self._async_get_light_entities()
+        
+        data_schema = vol.Schema({
+            vol.Optional(CONF_EXTERNAL_LIGHT_ENTITY): vol.In(available_lights) if available_lights else str,
+            vol.Optional(CONF_LIGHT_SCHEDULE_START, default=DEFAULT_LIGHT_SCHEDULE_START): str,
+            vol.Optional(CONF_LIGHT_SCHEDULE_END, default=DEFAULT_LIGHT_SCHEDULE_END): str,
+        })
+
+        return self.async_show_form(
+            step_id="light_control",
+            data_schema=data_schema,
+            errors=errors,
+            description_placeholders={
+                "available_lights": "\n".join([f"• {entity_id}" for entity_id in available_lights]) if available_lights else "Keine gefunden",
             },
         )
 
@@ -155,6 +192,21 @@ class AthenaPlantConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return False
         
         return True
+
+    async def _async_get_light_entities(self) -> list:
+        """Get available light and switch entities."""
+        entity_registry = async_get(self.hass)
+        light_entities = []
+        
+        for entity in entity_registry.entities.values():
+            # Suche nach Switch- und Light-Entitäten die Licht sein könnten
+            if (entity.entity_id.startswith("switch.") and 
+                any(keyword in entity.entity_id.lower() for keyword in ["light", "lamp", "led", "grow", "steckdose", "socket"])):
+                light_entities.append(entity.entity_id)
+            elif entity.entity_id.startswith("light."):
+                light_entities.append(entity.entity_id)
+        
+        return sorted(light_entities)
 
     @staticmethod
     @callback

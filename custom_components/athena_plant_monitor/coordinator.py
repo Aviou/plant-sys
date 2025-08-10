@@ -18,6 +18,7 @@ from .const import (
     ALERT_THRESHOLDS,
     CLIMATE_STRATEGIES,
     VENTILATION_MODES,
+    DAY_NIGHT_CONFIG,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -26,7 +27,7 @@ _LOGGER = logging.getLogger(__name__)
 class AthenaPlantCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from ESPHome entities."""
 
-    def __init__(self, hass: HomeAssistant, device_id: str, update_interval: int) -> None:
+    def __init__(self, hass: HomeAssistant, device_id: str, update_interval: int, config_data: dict = None) -> None:
         """Initialize the coordinator."""
         super().__init__(
             hass,
@@ -36,6 +37,10 @@ class AthenaPlantCoordinator(DataUpdateCoordinator):
         )
         self.device_id = device_id
         self._entity_ids = {}
+        self._config_data = config_data or {}
+        self._external_light_entity = self._config_data.get("external_light_entity")
+        self._light_schedule_start = self._config_data.get("light_schedule_start", "06:00")
+        self._light_schedule_end = self._config_data.get("light_schedule_end", "22:00")
         self._irrigation_state = {
             "current_phase": "P3",
             "last_irrigation": None,
@@ -48,6 +53,15 @@ class AthenaPlantCoordinator(DataUpdateCoordinator):
             "phase": "vegetative",
             "steering": "vegetative", 
             "substrate_size": 10.0,
+        }
+        
+        # Climate control state
+        self._climate_control = {
+            "auto_enabled": False,
+            "vpd_optimization": False,
+            "emergency_mode": False,
+            "last_strategy": None,
+            "last_ventilation_mode": "normal",
         }
         
         # Build entity ID mapping
@@ -71,7 +85,8 @@ class AthenaPlantCoordinator(DataUpdateCoordinator):
                     try:
                         # Try to convert to float for sensors
                         if key in ["temperature", "humidity", "vwc", "ec_substrate", "ph_substrate", 
-                                  "temp_substrate", "co2", "light", "water_level", "pressure"]:
+                                  "temp_substrate", "co2", "water_level", "pressure",
+                                  "temperature_outside", "humidity_outside", "pressure_outside", "co2_outside"]:
                             data[key] = float(state.state)
                         else:
                             data[key] = state.state
@@ -93,6 +108,7 @@ class AthenaPlantCoordinator(DataUpdateCoordinator):
             # Add configuration
             data["growth_config"] = self._growth_config.copy()
             data["irrigation_state"] = self._irrigation_state.copy()
+            data["climate_control"] = self._climate_control.copy()
             
             return data
             
@@ -125,9 +141,17 @@ class AthenaPlantCoordinator(DataUpdateCoordinator):
         if humidity is not None and humidity_outside is not None:
             derived["humidity_differential"] = round(humidity - humidity_outside, 1)
         
-        # VPD Target based on growth phase and time
+        # VPD Target based on growth phase and day/night cycle
         vpd_target = self._calculate_vpd_target()
         derived["vpd_target"] = vpd_target
+        
+        # Temperature, Humidity, and CO2 targets
+        derived["temperature_target"] = self._calculate_temperature_target()
+        derived["humidity_target"] = self._calculate_humidity_target()
+        derived["co2_target"] = self._calculate_co2_target()
+        
+        # Day/Night status
+        derived["is_day_cycle"] = self._is_day_cycle()
         
         # Climate strategy recommendation
         climate_strategy = self._determine_climate_strategy(data, derived)
@@ -152,23 +176,20 @@ class AthenaPlantCoordinator(DataUpdateCoordinator):
         return derived
 
     def _calculate_vpd_target(self) -> float:
-        """Calculate VPD target based on growth phase and lighting."""
+        """Calculate VPD target based on growth phase and day/night cycle."""
         phase = self._growth_config["phase"]
         steering = self._growth_config["steering"]
         
-        # Check if lights are on
-        lights_on = self.hass.states.get(self._entity_ids.get("led_panel"))
-        is_lights_on = lights_on and lights_on.state == "on"
+        # Check if it's day or night (based on lights)
+        is_day = self._is_day_cycle()
         
-        # Base VPD targets from Athena guidelines
-        if phase == "vegetative":
-            base_vpd = 0.9 if is_lights_on else 0.7
-        elif phase in ["flowering_stretch", "flowering_bulk"]:
-            base_vpd = 1.2 if is_lights_on else 0.9
-        elif phase == "flowering_finish":
-            base_vpd = 1.4 if is_lights_on else 1.0
+        # Get VPD target from growth phase configuration
+        phase_config = GROWTH_PHASES.get(phase, GROWTH_PHASES["vegetative"])
+        
+        if is_day:
+            base_vpd = phase_config.get("vpd_target_day", 1.0)
         else:
-            base_vpd = 1.0
+            base_vpd = phase_config.get("vpd_target_night", 0.8)
             
         # Adjust for crop steering
         if steering == "generative":
@@ -178,8 +199,135 @@ class AthenaPlantCoordinator(DataUpdateCoordinator):
             
         return round(max(0.5, min(2.0, base_vpd)), 2)
 
+    def _is_day_cycle(self) -> bool:
+        """Determine if it's currently day cycle based on lights and/or schedule."""
+        
+        # 1. Prüfe externe Lichtentität (z.B. WLAN-Steckdose) - Höchste Priorität
+        if self._external_light_entity:
+            external_light_state = self.hass.states.get(self._external_light_entity)
+            if external_light_state:
+                is_on = external_light_state.state in ["on", "true", "1"]
+                _LOGGER.debug(f"External light {self._external_light_entity}: {external_light_state.state} -> {'Day' if is_on else 'Night'}")
+                return is_on
+        
+        # 2. Prüfe ESPHome Light-Entität
+        led_panel = self.hass.states.get(self._entity_ids.get("led_panel"))
+        if led_panel and led_panel.state == "on":
+            _LOGGER.debug("ESPHome LED panel is on -> Day")
+            return True
+        
+        # 3. Prüfe ESPHome Switch für Growlight
+        grow_light_switch = self.hass.states.get(self._entity_ids.get("grow_light_switch"))
+        if grow_light_switch and grow_light_switch.state == "on":
+            _LOGGER.debug("ESPHome grow light switch is on -> Day")
+            return True
+        
+        # 4. Fallback: Zeitbasierte Erkennung mit konfigurierbaren Zeiten
+        from datetime import datetime, time
+        current_time = datetime.now().time()
+        
+        try:
+            start_time = time.fromisoformat(self._light_schedule_start)
+            end_time = time.fromisoformat(self._light_schedule_end)
+            
+            if start_time <= end_time:  # Normal case (e.g., 06:00 - 22:00)
+                is_day = start_time <= current_time <= end_time
+            else:  # Overnight case (e.g., 22:00 - 06:00)
+                is_day = current_time >= start_time or current_time <= end_time
+                
+            _LOGGER.debug(f"Time-based: {current_time} ({self._light_schedule_start}-{self._light_schedule_end}) -> {'Day' if is_day else 'Night'}")
+            return is_day
+            
+        except ValueError:
+            # Fallback auf hardcoded Zeiten bei ungültigen Zeitformaten
+            current_hour = datetime.now().hour
+            is_day = 6 <= current_hour < 22
+            _LOGGER.debug(f"Hardcoded time fallback: hour {current_hour} -> {'Day' if is_day else 'Night'}")
+            return is_day
+
+    def _calculate_temperature_target(self) -> float:
+        """Calculate temperature target based on growth phase and day/night cycle."""
+        phase = self._growth_config["phase"]
+        is_day = self._is_day_cycle()
+        
+        phase_config = GROWTH_PHASES.get(phase, GROWTH_PHASES["vegetative"])
+        
+        if is_day:
+            return phase_config.get("temp_target_day", 25.0)
+        else:
+            return phase_config.get("temp_target_night", 22.0)
+
+    def _calculate_humidity_target(self) -> float:
+        """Calculate humidity target based on growth phase and day/night cycle."""
+        phase = self._growth_config["phase"]
+        is_day = self._is_day_cycle()
+        
+        phase_config = GROWTH_PHASES.get(phase, GROWTH_PHASES["vegetative"])
+        
+        if is_day:
+            return phase_config.get("humidity_target_day", 65.0)
+        else:
+            return phase_config.get("humidity_target_night", 70.0)
+
+    def _calculate_co2_target(self) -> int:
+        """Calculate CO2 target based on growth phase and day/night cycle."""
+        phase = self._growth_config["phase"]
+        is_day = self._is_day_cycle()
+        
+        phase_config = GROWTH_PHASES.get(phase, GROWTH_PHASES["vegetative"])
+        
+        if is_day:
+            return phase_config.get("co2_target_day", 1200)
+        else:
+            return phase_config.get("co2_target_night", 1000)
+
+    def _calculate_vwc_target(self) -> float:
+        """Calculate VWC target based on growth phase and crop steering."""
+        phase = self._growth_config["phase"]
+        steering = self._growth_config["steering"]
+        
+        phase_config = GROWTH_PHASES.get(phase, GROWTH_PHASES["vegetative"])
+        base_vwc = phase_config.get("vwc_target", 75.0)
+        
+        # Adjust for crop steering
+        steering_config = CROP_STEERING_STRATEGIES.get(steering, CROP_STEERING_STRATEGIES["balanced"])
+        
+        if "shot_multiplier" in steering_config:
+            # Higher multiplier means more water retention
+            if steering_config["shot_multiplier"] > 1.0:
+                base_vwc += 5.0  # Vegetative steering - more water
+            elif steering_config["shot_multiplier"] < 1.0:
+                base_vwc -= 5.0  # Generative steering - less water
+        
+        return round(max(50.0, min(95.0, base_vwc)), 1)
+
+    def _calculate_ec_target(self) -> float:
+        """Calculate EC target based on growth phase and crop steering."""
+        phase = self._growth_config["phase"]
+        steering = self._growth_config["steering"]
+        
+        phase_config = GROWTH_PHASES.get(phase, GROWTH_PHASES["vegetative"])
+        base_ec = phase_config.get("ec_target", 4.0)
+        
+        # Adjust for crop steering
+        steering_config = CROP_STEERING_STRATEGIES.get(steering, CROP_STEERING_STRATEGIES["balanced"])
+        
+        if "ec_target_increase" in steering_config:
+            base_ec += steering_config["ec_target_increase"]
+        elif "ec_target_reduction" in steering_config:
+            base_ec -= steering_config["ec_target_reduction"]
+        
+        return round(max(1.5, min(10.0, base_ec)), 1)
+
+    def _calculate_ph_target(self) -> float:
+        """Calculate pH target based on growth phase."""
+        phase = self._growth_config["phase"]
+        
+        phase_config = GROWTH_PHASES.get(phase, GROWTH_PHASES["vegetative"])
+        return phase_config.get("ph_target", 6.0)
+
     def _determine_climate_strategy(self, data: Dict[str, Any], derived: Dict[str, Any]) -> Dict[str, str]:
-        """Determine optimal climate strategy based on inside/outside conditions."""
+        """Determine optimal climate strategy based on inside/outside conditions and targets."""
         
         temp_in = data.get("temperature")
         humidity_in = data.get("humidity")
@@ -189,20 +337,23 @@ class AthenaPlantCoordinator(DataUpdateCoordinator):
         humidity_out = data.get("humidity_outside")
         vpd_out = derived.get("vpd_outside")
         
+        # Get dynamic targets based on day/night cycle
         vpd_target = derived.get("vpd_target", 1.0)
+        temp_target = derived.get("temperature_target", 25.0)
+        humidity_target = derived.get("humidity_target", 65.0)
         
         # Default strategy
         strategy = "maintain"
         ventilation = "normal"
         
-        if all(v is not None for v in [temp_in, humidity_in, vpd_in, temp_out, humidity_out, vpd_out]):
+        if all(v is not None for v in [temp_in, humidity_in, vpd_in]):
             
             # VPD too low (high humidity) - need dehumidification
             if vpd_in < vpd_target - 0.2:
-                if temp_out > temp_in and humidity_out < humidity_in:
+                if temp_out and humidity_out and temp_out > temp_in and humidity_out < humidity_in:
                     strategy = "intake_air"
                     ventilation = "increase_intake"
-                elif temp_in < 28:  # Can still heat without stress
+                elif temp_in < temp_target + 3:  # Can still heat without stress
                     strategy = "heat_dehumidify"
                     ventilation = "increase_exhaust"
                 else:
@@ -211,10 +362,10 @@ class AthenaPlantCoordinator(DataUpdateCoordinator):
             
             # VPD too high (low humidity) - need humidification
             elif vpd_in > vpd_target + 0.2:
-                if temp_out < temp_in and humidity_out > humidity_in:
+                if temp_out and humidity_out and temp_out < temp_in and humidity_out > humidity_in:
                     strategy = "intake_air"
                     ventilation = "increase_intake"
-                elif temp_in > 20:  # Can cool down
+                elif temp_in > temp_target - 2:  # Can cool down
                     strategy = "cool_humidify"
                     ventilation = "increase_exhaust"
                 else:
@@ -222,15 +373,15 @@ class AthenaPlantCoordinator(DataUpdateCoordinator):
                     ventilation = "reduce_exhaust"
             
             # Temperature management
-            elif temp_in > 28:  # Too hot
-                if temp_out < temp_in - 2:
+            elif temp_in > temp_target + 3:  # Too hot relative to target
+                if temp_out and temp_out < temp_in - 2:
                     strategy = "cooling_ventilation"
                     ventilation = "maximum_intake"
                 else:
                     strategy = "cooling_only"
                     ventilation = "increase_exhaust"
             
-            elif temp_in < 20:  # Too cold
+            elif temp_in < temp_target - 2:  # Too cold relative to target
                 strategy = "heating"
                 ventilation = "reduce_intake"
             
@@ -451,3 +602,7 @@ class AthenaPlantCoordinator(DataUpdateCoordinator):
                     await self.apply_climate_strategy("humidify_only")
             else:
                 await self.apply_climate_strategy("cool_humidify")
+
+    def get_entity_id(self, key: str) -> Optional[str]:
+        """Get entity ID for a given key."""
+        return self._entity_ids.get(key)

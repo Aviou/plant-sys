@@ -35,6 +35,20 @@
           "ph_target": "Optimaler pH-Wert für Ihre Pflanzenart",
           "vpd_target": "Ziel-Dampfdruckdefizit für optimales Wachstum"
         }
+      },
+      "light_control": {
+        "title": "Lichtsteuerung konfigurieren",
+        "description": "Konfigurieren Sie die Steuerung Ihrer Wachstumsbeleuchtung.\n\nVerfügbare Licht-Entitäten:\n{available_lights}",
+        "data": {
+          "external_light_entity": "Externe Lichtentität (WLAN-Steckdose, etc.)",
+          "light_schedule_start": "Licht-Startzeit (HH:MM)",
+          "light_schedule_end": "Licht-Endzeit (HH:MM)"
+        },
+        "data_description": {
+          "external_light_entity": "Wählen Sie die Switch- oder Light-Entität für Ihre Wachstumsbeleuchtung",
+          "light_schedule_start": "Tageszeit, zu der das Licht automatisch eingeschaltet werden soll",
+          "light_schedule_end": "Tageszeit, zu der das Licht automatisch ausgeschaltet werden soll"
+        }
       }
     },
     "error": {

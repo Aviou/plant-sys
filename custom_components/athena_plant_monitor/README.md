@@ -7,9 +7,12 @@ Eine fortschrittliche HACS-Integration für Home Assistant zur Überwachung und 
 ### Vollständige Athena® Implementation
 - **P0-P3 Bewässerungsphasen**: Komplette Umsetzung aller vier Athena® Irrigationsphasen
 - **Crop Steering**: Vegetative, generative und ausgewogene Steuerungsstrategien
-- **VPD-gesteuerte Klimakontrolle**: Automatische VPD-Berechnung und -Steuerung
+- **VPD-gesteuerte Klimakontrolle**: Automatische VPD-Berechnung und -Steuerung mit Tag/Nacht-Unterscheidung
+- **Tag/Nacht-Zyklen**: Dynamische Zielwerte für Temperatur, Luftfeuchtigkeit, VPD und CO₂
 - **EC-Stacking**: Intelligente Nährstoffmanagement-Strategien
 - **Dryback-Targets**: Präzise Rücktrocknungssteuerung nach Wachstumsphase
+- **9 Klimastrategien**: Von "Optimale Bedingungen halten" bis "Aktive Kühlung"
+- **6 Lüftungsmodi**: Intelligente Ventilationssteuerung
 
 ### ESPHome Integration
 - **Automatische Erkennung**: Findet automatisch ESPHome-Geräte mit Pflanzensensoren
@@ -25,9 +28,11 @@ Eine fortschrittliche HACS-Integration für Home Assistant zur Überwachung und 
 ## 📊 Sensoren
 
 ### Umweltmonitoring
-- Lufttemperatur, Luftfeuchtigkeit, Luftdruck
-- CO₂-Konzentration, Lichtintensität
-- **VPD (berechnet)**: Automatische Dampfdruckdefizit-Berechnung
+- Lufttemperatur, Luftfeuchtigkeit, Luftdruck (innen & außen)
+- CO₂-Konzentration
+- **VPD (berechnet)**: Automatische Dampfdruckdefizit-Berechnung für innen & außen
+- **Differenzialsensoren**: Temperatur-, Luftfeuchtigkeits- und VPD-Unterschiede
+- **Tag/Nacht-Status**: Automatische Erkennung über WLAN-Lichtsteuerung oder Zeitplan
 
 ### Substratmonitoring
 - **VWC (Volumetrischer Wassergehalt)**: Substratfeuchte-Messung
@@ -37,14 +42,16 @@ Eine fortschrittliche HACS-Integration für Home Assistant zur Überwachung und 
 - **Dryback Prozent**: Automatische Dryback-Berechnung
 
 ### Zielwert-Sensoren
-- Alle wichtigen Parameter haben entsprechende Zielwert-Sensoren
-- **Automatische Anpassung** basierend auf Wachstumsphase und Crop Steering
-- **Abweichungsberechnung** von aktuellen zu Zielwerten
+- **VPD, Temperatur, Luftfeuchtigkeit, CO₂**: Dynamische Zielwerte basierend auf Tag/Nacht-Zyklus
+- **VWC, EC, pH**: Zielwerte basierend auf Wachstumsphase und Crop Steering
+- **Automatische Anpassung** basierend auf aktueller Phase und Zeit
+- **Abweichungsberechnung** von aktuellen zu Zielwerten mit Prozentangabe
 
 ### Status-Sensoren
 - **Aktuelle Irrigationsphase** (P0, P1, P2, P3)
 - **Wachstumsphase** (Vegetativ, Blütephase, etc.)
 - **Crop Steering Strategie** (Vegetativ, Generativ, Ausgewogen)
+- **Tag/Nacht-Zyklus**: Zeigt aktuellen Status ("Tag" oder "Nacht")
 - **Tageswassermenge** und **Max VWC Heute**
 
 ## 🔧 Aktoren & Steuerung
@@ -53,6 +60,9 @@ Eine fortschrittliche HACS-Integration für Home Assistant zur Überwachung und 
 - **Automatische Bewässerung**: Ein/Aus-Steuerung der Automatisierung
 - **Manuelle Pumpe**: Direktsteuerung der Bewässerungspumpe
 - **Klimasteuerung**: Zu-/Abluft, Be-/Entfeuchter, CO₂-Ventil
+- **Automatische Klimaregelung**: Aktiviert/deaktiviert die automatische Klimaoptimierung
+- **VPD-Optimierung**: Intelligente VPD-basierte Klimasteuerung
+- **Notfall-Lüftung**: Maximale Belüftung in Notsituationen
 
 ### Eingabefelder
 - **Substratgröße**: Einstellung des Substratvolumens
@@ -128,6 +138,30 @@ service: athena_plant_monitor.emergency_protocol
 data:
   disable_automation: true
   stop_all_pumps: true
+```
+
+### `athena_plant_monitor.apply_climate_strategy`
+Wendet eine Klimastrategie an
+```yaml
+service: athena_plant_monitor.apply_climate_strategy
+data:
+  strategy: heat_dehumidify  # Optional, automatisch wenn nicht angegeben
+```
+
+### `athena_plant_monitor.set_ventilation_mode`
+Setzt den Lüftungsmodus
+```yaml
+service: athena_plant_monitor.set_ventilation_mode
+data:
+  mode: increase_intake
+```
+
+### `athena_plant_monitor.optimize_vpd`
+Optimiert das VPD
+```yaml
+service: athena_plant_monitor.optimize_vpd
+data:
+  target_vpd: 1.2  # Optional, automatisch wenn nicht angegeben
 ```
 
 ## 📦 Installation
@@ -341,11 +375,6 @@ sensor:
       name: "CO2"
       id: co2_sensor
       
-  # Licht
-  - platform: bh1750
-    name: "Light"
-    id: light_sensor
-    
   # Wassertank
   - platform: ultrasonic
     trigger_pin: D1
